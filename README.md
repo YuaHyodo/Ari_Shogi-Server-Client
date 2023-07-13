@@ -40,5 +40,10 @@ USIエンジンがshogi-serverに接続して対局するためのプログラ�
 - --play_white_only: 後手番でのみ対局したいときのオプション。--play_white_onlyと引数に入れて起動した時のみ有効になる。マッチングした際、自分が先手番だとリジェクトする。
 - --time_aware_toryo: 現在時刻と評価値が条件を満たした場合に投了する機能。デフォルトでは無し。{分}_{評価値}という感じで設定。(例: 5_300 => 次の対局開始まで残り5分を切って、かつ自分の評価値が-300以下の場合、投了する。)
 
+# 使用例
+```
+python -m main AriShogi.bat AriShogiTest floodgate-300-10F,0123 --engine_options USI_Ponder:false,USI_Hash:4096,Threads:4,BookFile:no_book --games 20 --log_file main_log.txt --log_file_csa csa_log.txt --log_file_usi usi_log.txt --time_aware_toryo 10_1000 --blacklist KirainaYatsu1,KiranaYatsu2,DaikirainaYatsu --play_black_only
+```
+
 # ライセンス
 - MITライセンス。詳細はLICENSEファイルを確認してください。
