@@ -12,5 +12,23 @@ USIエンジンがshogi-serverに接続して対局するためのプログラ�
 - 望んだ手番ではなかった場合、リジェクトできる。
 - ログをとれる。本体 / CSAプロトコルでの通信 / USIプロトコルでの通信、の3種類。
 
+# 引数
+## 必須のもの
+- engine_path: USIエンジンのpath。
+- login_name: サーバーにログインする際の名前。
+- password: サーバーにログインする際のパスワード。floodgateで普通に対局したいなら'floodgate-300-10F,{好きなパスワード}'という感じにする必要がある。(例: 'floodgate-300-10F,0000')
+
+## オプション
+- --engine_options: USIエンジンのオプション。{オプション名}:{設定値},{オプション名}:{設定値}・・・、という感じに設定する。(例: USI_Ponder:false,USI_Hash:256,EvalDir:aaaa/aaa)
+- --server: 接続先。デフォルトではfloodgate( http://wdoor.c.u-tokyo.ac.jp/shogi/floodgate.html )
+- --port: ポート。デフォルト4081。基本的に4081以外は使わない。
+- --games: 対局数。デフォルト1。リジェクトした対局もカウントする。
+- --log_file: 本体のログ。デフォルトでは無し。
+- --log_file_csa: CSAプロトコルでの通信に関するログ。デフォルトでは無し。
+- --log_file_usi: USIプロトコルでの通信に関するログ。デフォルトでは無し。
+- --blacklist: ブラックリスト。デフォルトでは空。拒否したい相手の名前を','で区切って記入する。(例: KirainaYatsu1,KiranaYatsu2,DaikirainaYatsu)
+- --play_black_only: 先手番でのみ対局したいときのオプション。--play_black_onlyと引数に入れて起動した時のみ有効になる。マッチングした際、自分が後手番だとリジェクトする。
+- --play_white_only: 後手番でのみ対局したいときのオプション。--play_white_onlyと引数に入れて起動した時のみ有効になる。マッチングした際、自分が先手番だとリジェクトする。
+
 # ライセンス
 - MITライセンス。詳細はLICENSEファイルを確認してください。
