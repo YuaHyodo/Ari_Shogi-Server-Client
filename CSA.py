@@ -224,7 +224,7 @@ class Client:
         if comment is None:
             self.send(csamove)
         else:
-            csamove_and_comment = csamove + ",' " + str(comment)
+            csamove_and_comment = csamove + ",'* " + str(comment)
             self.send(csamove_and_comment)
         self.board_push_csa(csamove)
         _, t = self.recv_move()
