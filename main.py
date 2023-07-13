@@ -30,7 +30,8 @@ from datetime import datetime
 
 class Online:
     def __init__(self, engine, opt, player, host, port, main_log='none',
-                 csa_log='none', usi_log='none', Blist=[], play_only_color=[False, False]):
+                 csa_log='none', usi_log='none', Blist=[], play_only_color=[False, False],
+                 time_aware_toryo=None):
         self.engine_path = engine
         self.client = Client(host, port=port, log_file=csa_log if csa_log != 'none' else None)
         self.player = player
@@ -42,6 +43,11 @@ class Online:
         self.blacklist = Blist
         self.play_black_only = play_only_color[0]
         self.play_white_only = play_only_color[1]
+
+        self.time_aware_toryo = time_aware_toryo
+        if self.time_aware_toryo is not None:
+            self.time_aware_toryo = [int(i) for i in self.time_aware_toryo.split('_')]
+            self.time_aware_toryo[1] = self.time_aware_toryo[1] * -1
 
         self.write_log('engine: {}, engine_options: {}, host: {}, port: {}, login_name: {}, password: {}, main_log_file: {}, csa_log_file: {}, usi_log_file: {}, blacklist: {}, play_only_color: {}'.format(engine, opt,
                             host, port, player[0], player[1], main_log, csa_log, usi_log, Blist, play_only_color))
@@ -63,6 +69,26 @@ class Online:
         self.write_log('stop_engine')
         self.engine.stop()
         return
+
+    def TimeAwareToryo(self, score):
+        if score is None or self.time_aware_toryo is None:
+            return False
+        now = datetime.now()
+        if now.minute >= 30:
+            #30分～59分
+            if 60 - self.time_aware_toryo[0] > now.minute:
+                return False
+            if score <= self.time_aware_toryo[1]:
+                self.write_log('time_aware_toryo / score={} / {} / {}'.format(score, now.minute, self.time_aware_toryo))
+                return True
+        else:
+            #0分～29分
+            if 30 - self.time_aware_toryo[0] > now.minute:
+                return False
+            if score <= self.time_aware_toryo[1]:
+                self.write_log('time_aware_toryo / score={} / {} / {}'.format(score, now.minute, self.time_aware_toryo))
+                return True
+        return False
 
     def game(self, games):
         for game_num in range(games):
@@ -125,6 +151,9 @@ class Online:
                         summary['time']['total'] * 1000, summary['time']['inc'] * 1000,
                         summary['time']['inc'] * 1000, summary['time']['byoyomi'] * 1000))
                     move, score = self.engine.get_move(score=True)
+                    if self.TimeAwareToryo(score):
+                        self.client.toryo()
+                        break
                     summary['position'] = summary['position'] + ' ' + move
                     if summary['color'] == '-' and score is not None:
                         score *= -1
@@ -160,6 +189,8 @@ p.add_argument('--log_file_usi', type=str, default='none')
 p.add_argument('--blacklist', type=str, default='')
 p.add_argument('--play_black_only', action='store_true')
 p.add_argument('--play_white_only', action='store_true')
+
+p.add_argument('--time_aware_toryo', type=str, default='')
 args = p.parse_args()
 
 if args.engine_options.split(',')[0] != '':
@@ -171,7 +202,10 @@ player = [args.login_name, args.password]
 
 Blist = [i for i in args.blacklist.split(',') if len(i) >= 2]
 
+time_aware_toryo = args.time_aware_toryo if '_' in args.time_aware_toryo else None
+
 online = Online(args.engine_path, opt, player, args.server, args.port, main_log=args.log_file,
                 Blist=Blist, play_only_color=[args.play_black_only, args.play_white_only],
-                csa_log=args.log_file_csa, usi_log=args.log_file_usi)
+                csa_log=args.log_file_csa, usi_log=args.log_file_usi,
+                time_aware_toryo=time_aware_toryo)
 online.game(args.games)
