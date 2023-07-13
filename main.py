@@ -126,6 +126,8 @@ class Online:
                         summary['time']['inc'] * 1000, summary['time']['byoyomi'] * 1000))
                     move, score = self.engine.get_move(score=True)
                     summary['position'] = summary['position'] + ' ' + move
+                    if summary['color'] == '-' and score is not None:
+                        score *= -1
                     t = self.client.send_move(move, comment=score)
                     if t is None:
                         break
