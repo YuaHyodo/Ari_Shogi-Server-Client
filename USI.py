@@ -29,6 +29,7 @@ import os
 
 class Engine:
     def __init__(self, path, log_file=None):
+        self.inf = 100000#評価値の最大
         self.log_file = log_file
         self.info_mes_list = []
         cwd = os.path.dirname(path)
@@ -108,11 +109,22 @@ class Engine:
                         score = int(score.split(' ')[0])
                         break
                     if 'score mate' in mes:
-                        #+mateは+100000、-mateは-100000とした
-                        score = 100000
-                        if mes.split('score mate ')[1][0] == '-':
-                            score = -100000
-                        break
+                        mate_moves_num = mes.split('score mate ')[1].split(' ')[0]
+                        if mate_moves_num == '+':
+                            #+のみ。mate 1と同じにする
+                            score = self.inf - 1
+                            break
+                        elif mate_moves_num == '-':
+                            #-のみ。mate -1と同じにする
+                            score = -self.inf + 1
+                            break
+                        else:
+                            #それ以外
+                            if '-' in mate_moves_num:
+                                score = -self.inf + int(mate_moves_num)
+                            else:
+                                score = self.inf - int(mate_moves_num)
+                            break
             return bestmove, score
         else:
             return bestmove
