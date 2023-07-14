@@ -117,7 +117,7 @@ class Online:
                     reject = True
                     break
                 if not reject:
-                    self.reject = self.client.agree()
+                    reject = not self.client.agree()
                 if reject:#リジェクトした or された
                     self.write_log('reject')
                     self.client.logout()
