@@ -80,8 +80,9 @@ class Client:
             time.sleep(30)
 
     def send(self, mes):
-        w = '<csa_send> | ' + str(datetime.now()) + ' | ' + mes
-        self.write_log(w)
+        if len(mes) >= 1:
+            w = '<csa_send> | ' + str(datetime.now()) + ' | ' + mes
+            self.write_log(w)
         
         k = '\n'
         if k not in mes:
@@ -91,8 +92,9 @@ class Client:
 
     def recv(self):
         mes = self.socket.recv(self.buf_size).decode('utf-8')
-        w = '<csa_recv> | ' + str(datetime.now()) + ' | ' + mes
-        self.write_log(w)
+        if len(mes) > 1:
+            w = '<csa_recv> | ' + str(datetime.now()) + ' | ' + mes
+            self.write_log(w)
         return mes
 
     def recv_word(self, word):
@@ -227,7 +229,9 @@ class Client:
             csamove_and_comment = csamove + ",'* " + str(comment)
             self.send(csamove_and_comment)
         self.board_push_csa(csamove)
-        _, t = self.recv_move()
+        m, t = self.recv_move()
+        if m == 'end':
+            return
         return t
 
     def recv_move(self):

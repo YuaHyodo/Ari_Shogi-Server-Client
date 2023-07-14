@@ -101,12 +101,19 @@ class Engine:
         bestmove = ''.join(move.splitlines())
         if score:
             score = None
-            for i in reversed(range(len(self.info_mes_list))):
+            for mes in reversed(self.info_mes_list):
                 mes = self.info_mes_list[i]
-                if 'score cp' in mes:
-                    score = mes.split('score cp ')[1]
-                    score = int(score.split(' ')[0])
-                    break
+                if 'score' in mes:
+                    if 'score cp' in mes:
+                        score = mes.split('score cp ')[1]
+                        score = int(score.split(' ')[0])
+                        break
+                    if 'score mate' in mes:
+                        #+mateは+100000、-mateは-100000とした
+                        score = 100000
+                        if mes.split('score mate ')[1][0] == '-':
+                            score = -100000
+                        break
             return bestmove, score
         else:
             return bestmove
