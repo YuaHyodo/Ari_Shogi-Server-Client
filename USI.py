@@ -121,7 +121,7 @@ class Engine:
                         else:
                             #それ以外
                             if '-' in mate_moves_num:
-                                score = -self.inf + int(mate_moves_num)
+                                score = -self.inf - int(mate_moves_num)
                             else:
                                 score = self.inf - int(mate_moves_num)
                             break
