@@ -6,6 +6,7 @@ USIエンジンがshogi-serverに接続して対局するためのプログラ�
 - Ponder非対応。あと、時々止まる。2023/07/13現在、まともなテストはまだできていない。
 - コードが汚い、動作が遅い、そして不安定。
 - USIプロトコルに関しては http://shogidokoro.starfree.jp/usi.html 、CSAプロトコルに関しては http://www2.computer-shogi.org/protocol/tcp_ip_server_121.html を参考。
+- floodgateの http://wdoor.c.u-tokyo.ac.jp/shogi/view/show-player.cgi?event=LATEST&filter=floodgate&show_self_play=1&user=Li_with_Ari_Shogi-Server-Client%2Bfa6250961bd946dd412a36857953dea2 のアカウントで動作チェック中。(2023/07/14)
 
 # 機能
 - USIエンジンをCSAプロトコルで動くサーバー( floodgateとか )で対局させられる。
