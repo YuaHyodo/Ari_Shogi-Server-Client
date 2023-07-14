@@ -102,7 +102,6 @@ class Engine:
         if score:
             score = None
             for mes in reversed(self.info_mes_list):
-                mes = self.info_mes_list[i]
                 if 'score' in mes:
                     if 'score cp' in mes:
                         score = mes.split('score cp ')[1]

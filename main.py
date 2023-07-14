@@ -128,7 +128,6 @@ class Online:
                 #以下、対局
                 if summary['color'] == '+':
                     #初手
-                    summary['time']['total'] += summary['time']['inc']
                     self.engine.send('position ' + summary['position'])
                     self.engine.send('go btime {} wtime {} binc {} winc {} byoyomi {}'.format(summary['time']['total'] * 1000,
                         summary['time']['total'] * 1000, summary['time']['inc'] * 1000,
@@ -136,16 +135,21 @@ class Online:
                     move, score = self.engine.get_move(score=True)
                     summary['position'] = summary['position'] + ' ' + move
                     t = self.client.send_move(move, comment=score)
+                    """
+                    CSAプロトコルでは「加算時間は自分の手番が来た時に加算される」となっている様だが、
+                    加算した後の時間をエンジンに送ると2回加算される( 残り時間8秒、加算10秒とすると、
+                    こちら側と向こう側で10秒ずつ足されてしまい、本来なら18秒以上思考すると切れ負けになるのに
+                    28秒まで思考しても大丈夫だと解釈される)ので、加算時間を処理する部分を変更した。
+                    (以前の方式のまま、エンジン側に加算時間の情報を送らないようにする事でも対処できると思う)
+                    """
+                    summary['time']['total'] += summary['time']['inc']
                     summary['time']['total'] -= t
                 while True:
                     opponent_move, _ = self.client.recv_move()
                     if opponent_move == 'end':
                         break
-
                     self.client.board_push_usi(opponent_move)
-        
                     summary['position'] = summary['position'] + ' ' + opponent_move
-                    summary['time']['total'] += summary['time']['inc']
                     self.engine.send('position ' + summary['position'])
                     self.engine.send('go btime {} wtime {} binc {} winc {} byoyomi {}'.format(summary['time']['total'] * 1000,
                         summary['time']['total'] * 1000, summary['time']['inc'] * 1000,
@@ -160,6 +164,7 @@ class Online:
                     t = self.client.send_move(move, comment=score)
                     if t is None:
                         break
+                    summary['time']['total'] += summary['time']['inc']
                     summary['time']['total'] -= t
                 self.write_log('game finish')
                 self.client.keep_connect[1] = False
