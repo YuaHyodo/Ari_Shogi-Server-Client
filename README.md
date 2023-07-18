@@ -3,14 +3,14 @@ USIエンジンがshogi-serverに接続して対局するためのプログラ�
 
 # 概要
 - 数日前、あるプログラムの一部としてUSIエンジンをshogi-serverで対局させるためのプログラムを作った。そのプログラムを公開しようと思ったので少しだけ調整した。そしてできたものがこれ。
-- Ponder非対応。あと、時々止まる。2023/07/13現在、まともなテストはまだできていない。
 - コードが汚い、動作が遅い、そして不安定。
 - USIプロトコルに関しては http://shogidokoro.starfree.jp/usi.html 、CSAプロトコルに関しては http://www2.computer-shogi.org/protocol/tcp_ip_server_121.html を参考。
-- floodgateの http://wdoor.c.u-tokyo.ac.jp/shogi/view/show-player.cgi?event=LATEST&filter=floodgate&show_self_play=1&user=Li_with_Ari_Shogi-Server-Client%2Bfa6250961bd946dd412a36857953dea2 のアカウントで動作チェック中。(2023/07/14)
+- floodgateの http://wdoor.c.u-tokyo.ac.jp/shogi/view/show-player.cgi?event=LATEST&filter=floodgate&show_self_play=1&user=Li_with_Ari_Shogi-Server-Client%2Bfa6250961bd946dd412a36857953dea2 のアカウントで動作チェック中。(2023/07/18)
 
 # 機能
 - USIエンジンをCSAプロトコルで動くサーバー( floodgateとか )で対局させられる。
 - USIエンジンのオプションも設定できる。
+- USIエンジンのPonderも使える。
 - 評価値を送れる。(読み筋は不可)
 - ブラックリストに登録してある対局相手と当たった場合はリジェクトできる。
 - 望んだ手番ではなかった場合、リジェクトできる。
@@ -30,6 +30,7 @@ USIエンジンがshogi-serverに接続して対局するためのプログラ�
 
 ## オプション
 - --engine_options: USIエンジンのオプション。{オプション名}:{設定値},{オプション名}:{設定値}・・・、という感じに設定する。(例: USI_Ponder:false,USI_Hash:256,EvalDir:aaaa/aaa)
+- --use_ponder: USIエンジンのPonder( 相手番にも思考する機能 )を使用するかどうかのオプション。デフォルトOFF。--use_ponderと引数に入れて起動した時のみ有効になる。
 - --server: 接続先。デフォルトではfloodgate( http://wdoor.c.u-tokyo.ac.jp/shogi/floodgate.html )
 - --port: ポート。デフォルト4081。基本的に4081以外は使わない。
 - --games: 対局数。デフォルト1。リジェクトした対局もカウントする。
