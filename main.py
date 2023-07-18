@@ -29,15 +29,16 @@ import argparse
 from datetime import datetime
 
 class Online:
-    def __init__(self, engine, opt, player, host, port, main_log='none',
+    def __init__(self, engine, opt, use_ponder, player, host, port, main_log='none',
                  csa_log='none', usi_log='none', Blist=[], play_only_color=[False, False],
                  time_aware_toryo=None):
         self.engine_path = engine
         self.client = Client(host, port=port, log_file=csa_log if csa_log != 'none' else None)
         self.player = player
         self.opt = opt
+        self.use_ponder = use_ponder
+        
         self.log_file = main_log if main_log != 'none' else None
-
         self.usi_log = usi_log if usi_log != 'none' else None
 
         self.blacklist = Blist
@@ -125,6 +126,7 @@ class Online:
                     continue
                 self.write_log('start game')
                 self.client.keep_connect[1] = True
+                pondermove = None#pondermoveを返さなかった場合や、設定でponderを使わない場合はNone
                 #以下、対局
                 if summary['color'] == '+':
                     #初手
@@ -132,9 +134,13 @@ class Online:
                     self.engine.send('go btime {} wtime {} binc {} winc {} byoyomi {}'.format(summary['time']['total'] * 1000,
                         summary['time']['total'] * 1000, summary['time']['inc'] * 1000,
                         summary['time']['inc'] * 1000, summary['time']['byoyomi'] * 1000))
-                    move, score = self.engine.get_move(score=True)
+                    move, pondermove, score = self.engine.get_move(score=True, ponder=self.use_ponder)
                     summary['position'] = summary['position'] + ' ' + move
                     t = self.client.send_move(move, comment=score)
+                    if self.use_ponder and pondermove is not None:
+                        #ponderを使用する設定がON and エンジンがpondermoveを返した
+                        self.engine.send('position ' + summary['position'] + ' ' + pondermove)
+                        self.engine.send('go ponder')
                     """
                     CSAプロトコルでは「加算時間は自分の手番が来た時に加算される」となっている様だが、
                     加算した後の時間をエンジンに送ると2回加算される( 残り時間8秒、加算10秒とすると、
@@ -149,12 +155,25 @@ class Online:
                     if opponent_move == 'end':
                         break
                     self.client.board_push_usi(opponent_move)
-                    summary['position'] = summary['position'] + ' ' + opponent_move
-                    self.engine.send('position ' + summary['position'])
-                    self.engine.send('go btime {} wtime {} binc {} winc {} byoyomi {}'.format(summary['time']['total'] * 1000,
-                        summary['time']['total'] * 1000, summary['time']['inc'] * 1000,
-                        summary['time']['inc'] * 1000, summary['time']['byoyomi'] * 1000))
-                    move, score = self.engine.get_move(score=True)
+                    summary['position'] = summary['position'] + ' ' + opponent_move    
+                    if self.use_ponder and pondermove is not None:
+                        if opponent_move == pondermove:
+                            #ponderhit
+                            self.engine.send('ponderhit')
+                        else:
+                            #外れた場合、stopコマンドで停止させた後、通常通りの思考を行う
+                            self.engine.send('stop')
+                            #stopコマンドで正常に停止した場合はbestmoveが来るので、それが来るまで待機
+                            self.engine.get_move(score=False, ponder=False)
+                    if not self.use_ponder or pondermove is None or opponent_move != pondermove:
+                        #ponderを使用する設定がOFF
+                        #or エンジンがpondermoveを返さなかった
+                        #or pondermoveが外れた場合の処理
+                        self.engine.send('position ' + summary['position'])
+                        self.engine.send('go btime {} wtime {} binc {} winc {} byoyomi {}'.format(summary['time']['total'] * 1000,
+                            summary['time']['total'] * 1000, summary['time']['inc'] * 1000,
+                            summary['time']['inc'] * 1000, summary['time']['byoyomi'] * 1000))
+                    move, pondermove, score = self.engine.get_move(score=True, ponder=self.use_ponder)
                     if self.TimeAwareToryo(score):
                         self.client.toryo()
                         break
@@ -164,6 +183,9 @@ class Online:
                     t = self.client.send_move(move, comment=score)
                     if t is None:
                         break
+                    if self.use_ponder and pondermove is not None:
+                        self.engine.send('position ' + summary['position'] + ' ' + pondermove)
+                        self.engine.send('go ponder')
                     summary['time']['total'] += summary['time']['inc']
                     summary['time']['total'] -= t
                 self.write_log('game finish')
@@ -182,6 +204,7 @@ p.add_argument('engine_path', type=str)
 p.add_argument('login_name', type=str)
 p.add_argument('password', type=str)
 p.add_argument('--engine_options', type=str, default='')
+p.add_argument('--use_ponder', action='store_true')
 
 p.add_argument('--server', type=str, default='wdoor.c.u-tokyo.ac.jp')
 p.add_argument('--port', type=int, default=4081)
@@ -209,7 +232,7 @@ Blist = [i for i in args.blacklist.split(',') if len(i) >= 2]
 
 time_aware_toryo = args.time_aware_toryo if '_' in args.time_aware_toryo else None
 
-online = Online(args.engine_path, opt, player, args.server, args.port, main_log=args.log_file,
+online = Online(args.engine_path, opt, args.use_ponder, player, args.server, args.port, main_log=args.log_file,
                 Blist=Blist, play_only_color=[args.play_black_only, args.play_white_only],
                 csa_log=args.log_file_csa, usi_log=args.log_file_usi,
                 time_aware_toryo=time_aware_toryo)

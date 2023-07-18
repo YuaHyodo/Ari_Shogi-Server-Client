@@ -92,14 +92,19 @@ class Engine:
         self.send('usinewgame')
         return
 
-    def get_move(self, score=False):
+    def get_move(self, score=False, ponder=False):
         r = self.engine.stdout.readline()
         if 'bestmove' in r.split(' ')[0]:
             w = '<usi_recv> | ' + str(datetime.now()) + ' | ' + r
             move = r.split(' ')[1]
         else:
-            move = self.recv_word('bestmove', get_bestmove=True).split(' ')[1]
+            r = self.recv_word('bestmove', get_bestmove=True)
+            move = r.split(' ')[1]
         bestmove = ''.join(move.splitlines())
+        pondermove = None
+        if ponder and 'ponder ' in r:
+            pondermove = r.split('ponder ')[1]
+            pondermove = ''.join(pondermove.splitlines())
         if score:
             score = None
             for mes in reversed(self.info_mes_list):
@@ -125,7 +130,7 @@ class Engine:
                             else:
                                 score = self.inf - int(mate_moves_num)
                             break
-            return bestmove, score
+            return bestmove, pondermove, score
         else:
-            return bestmove
+            return bestmove, pondermove
         
