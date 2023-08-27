@@ -54,6 +54,8 @@ class Online:
                             host, port, player[0], player[1], main_log, csa_log, usi_log, Blist, play_only_color))
 
     def write_log(self, word):
+        if self.log_file is None:
+            return
         w = str(datetime.now()) + ' | ' + word
         print(w, file=codecs.open(self.log_file, 'a', 'utf-8'))
         return
@@ -94,8 +96,7 @@ class Online:
     def game(self, games):
         for game_num in range(games):
             self.write_log('game: {} / {}'.format(game_num+1, games))
-            #try:
-            if True:  
+            try:
                 self.setup_engine()
                 self.client.login(self.player[0], self.player[1])
                 self.client.keep_connect[1] = False
@@ -193,8 +194,7 @@ class Online:
                 self.write_log('logout')
                 self.client.logout()
                 self.stop_engine()
-            #except:
-            else:
+            except:
                 self.write_log('error')
                 time.sleep(10)
         return
