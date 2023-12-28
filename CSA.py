@@ -234,6 +234,15 @@ class Client:
             return
         return t
 
+    def A(self, r):
+        output = '0'
+        for i in r:
+            if i in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'):
+                output += i
+            else:
+                break
+        return int(output)
+
     def recv_move(self):
         end = ('#SENNICHITE', '#OUTE_SENNICHITE', '#ILLEGAL_MOVE', '#TIME_UP', '#RESIGN', '#JISHOGI',
                '#ILLEGAL_MOVE', '#MAX_MOVES', '#CHUDAN', '#WIN', '#DRAW', '#LOSE')
@@ -244,14 +253,14 @@ class Client:
         move = r.split(',')[0]
         if move[1] + move[2] == '00':
             usimove = self.d6[move[5] + move[6]] + '*' + move[3] + self.d1[move[4]]
-            return usimove, int(r.split(',T')[1])
+            return usimove, self.A(r.split(',T')[1])
         
         usimove = move[1] + self.d1[move[2]] + move[3] + self.d1[move[4]]
         if move[5] + move[6] in ('TO', 'NY', 'NK', 'NG', 'UM', 'RY'):
             index, _ = self.csamove_to_index(move)
             if self.board[index[0]][index[1]] not in ('+P', '+p', '+L', '+l', '+N', '+n', '+S', '+s', '+B', '+b', '+R', '+r'):
                 usimove = usimove + '+'
-        return usimove, int(r.split(',T')[1])
+        return usimove, self.A(r.split(',T')[1])
 
     def toryo(self):
         self.send('%TORYO')

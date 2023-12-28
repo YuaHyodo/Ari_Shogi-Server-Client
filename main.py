@@ -27,6 +27,7 @@ from CSA import Client
 import codecs
 import argparse
 from datetime import datetime
+import time
 
 class Online:
     def __init__(self, engine, opt, use_ponder, player, host, port, main_log='none',
@@ -199,41 +200,42 @@ class Online:
                 time.sleep(10)
         return
 
-p = argparse.ArgumentParser()
-p.add_argument('engine_path', type=str)
-p.add_argument('login_name', type=str)
-p.add_argument('password', type=str)
-p.add_argument('--engine_options', type=str, default='')
-p.add_argument('--use_ponder', action='store_true')
+if __name__ == '__main__':
+    p = argparse.ArgumentParser()
+    p.add_argument('engine_path', type=str)
+    p.add_argument('login_name', type=str)
+    p.add_argument('password', type=str)
+    p.add_argument('--engine_options', type=str, default='')
+    p.add_argument('--use_ponder', action='store_true')
 
-p.add_argument('--server', type=str, default='wdoor.c.u-tokyo.ac.jp')
-p.add_argument('--port', type=int, default=4081)
-p.add_argument('--games', type=int, default=1)
+    p.add_argument('--server', type=str, default='wdoor.c.u-tokyo.ac.jp')
+    p.add_argument('--port', type=int, default=4081)
+    p.add_argument('--games', type=int, default=1)
 
-p.add_argument('--log_file', type=str, default='none')
-p.add_argument('--log_file_csa', type=str, default='none')
-p.add_argument('--log_file_usi', type=str, default='none')
+    p.add_argument('--log_file', type=str, default='none')
+    p.add_argument('--log_file_csa', type=str, default='none')
+    p.add_argument('--log_file_usi', type=str, default='none')
 
-p.add_argument('--blacklist', type=str, default='')
-p.add_argument('--play_black_only', action='store_true')
-p.add_argument('--play_white_only', action='store_true')
+    p.add_argument('--blacklist', type=str, default='')
+    p.add_argument('--play_black_only', action='store_true')
+    p.add_argument('--play_white_only', action='store_true')
 
-p.add_argument('--time_aware_toryo', type=str, default='')
-args = p.parse_args()
+    p.add_argument('--time_aware_toryo', type=str, default='')
+    args = p.parse_args()
 
-if args.engine_options.split(',')[0] != '':
-    opt = {i.split(':')[0]: i.split(':')[1] for i in args.engine_options.split(',')}
-else:
-    opt = {}
+    if args.engine_options.split(',')[0] != '':
+        opt = {i.split(':')[0]: i.split(':')[1] for i in args.engine_options.split(',')}
+    else:
+        opt = {}
 
-player = [args.login_name, args.password]
+    player = [args.login_name, args.password]
 
-Blist = [i for i in args.blacklist.split(',') if len(i) >= 2]
+    Blist = [i for i in args.blacklist.split(',') if len(i) >= 2]
 
-time_aware_toryo = args.time_aware_toryo if '_' in args.time_aware_toryo else None
+    time_aware_toryo = args.time_aware_toryo if '_' in args.time_aware_toryo else None
 
-online = Online(args.engine_path, opt, args.use_ponder, player, args.server, args.port, main_log=args.log_file,
+    online = Online(args.engine_path, opt, args.use_ponder, player, args.server, args.port, main_log=args.log_file,
                 Blist=Blist, play_only_color=[args.play_black_only, args.play_white_only],
                 csa_log=args.log_file_csa, usi_log=args.log_file_usi,
                 time_aware_toryo=time_aware_toryo)
-online.game(args.games)
+    online.game(args.games)
